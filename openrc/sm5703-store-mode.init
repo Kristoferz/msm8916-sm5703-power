@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+
+description="SM5703 battery store mode 40-60%"
+
+command="/usr/local/sbin/sm5703-store-mode"
+command_background="yes"
+pidfile="/run/sm5703-store-mode.pid"
+
+depend() {
+	need localmount
+	after modules
+}
+
+stop_post() {
+	. /etc/conf.d/sm5703-store-mode
+
+	if [ "${ENABLE_CHARGE_ON_STOP:-yes}" = "yes" ] && [ -e "$LIMIT_PATH" ]; then
+		echo 0 > "$LIMIT_PATH"
+		ewarn "Charging re-enabled on service stop"
+	fi
+}

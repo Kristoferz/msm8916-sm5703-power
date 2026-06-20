@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * SM5703 DTS fragment for Samsung Galaxy J5 2015 / MSM8916.
+ *
+ * This fragment is intended to be folded into:
+ *   arch/arm64/boot/dts/qcom/msm8916-samsung-j5.dts
+ *
+ * GPIO numbers are based on the tested board wiring:
+ * - fuel-gauge bitbanged I2C: SCL/SDA GPIOs 121/122
+ * - charger bitbanged I2C:    SCL/SDA GPIOs 119/120
+ * - optional nCHG GPIO:        TLMM GPIO 108, active low
+ *
+ * Always verify against the vendor DT for your exact J5 variant.
+ */
+
+/ {
+	i2c_fuelgauge: i2c-fuelgauge {
+		compatible = "i2c-gpio";
+		sda-gpios = <&tlmm 122 GPIO_ACTIVE_HIGH>;
+		scl-gpios = <&tlmm 121 GPIO_ACTIVE_HIGH>;
+		i2c-gpio,delay-us = <5>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		fuel_gauge: fuel-gauge@71 {
+			compatible = "sm5703-fuelgauge,i2c";
+			reg = <0x71>;
+		};
+	};
+
+	i2c_charger: i2c-charger {
+		compatible = "i2c-gpio";
+		sda-gpios = <&tlmm 120 GPIO_ACTIVE_HIGH>;
+		scl-gpios = <&tlmm 119 GPIO_ACTIVE_HIGH>;
+		i2c-gpio,delay-us = <5>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sm5703_mfd: sm5703-mfd@49 {
+			compatible = "siliconmitus,sm5703mfd";
+			reg = <0x49>;
+			/* Optional. The tested driver also works via SM5703_CNTL alone. */
+			charge-enable-gpios = <&tlmm 108 GPIO_ACTIVE_LOW>;
+
+			charger {
+				compatible = "siliconmitus,sm5703-charger";
+			};
+		};
+	};
+};
